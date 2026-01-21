@@ -1,13 +1,6 @@
-#!/usr/bin/env python3
 """
-Classroom Attention Analytics - CONSERVATIVE PHILOSOPHY v2
-==========================================================
-
-🔒 LOCKED PHILOSOPHY:
-- Green should be common
-- Yellow should be transient sideways glances
-- Red should be rare (prolonged looking away)
-- If unsure → do NOT punish
+Classroom Attention Analytics 
+=============================
 
 STATES (4 States):
   🟢 FOCUSED: Normal posture facing board
@@ -47,7 +40,7 @@ def check_dependencies():
             missing.append(pkg)
     
     if missing:
-        print(f"❌ Missing: {', '.join(missing)}")
+        print(f"   Missing: {', '.join(missing)}")
         print(f"   Run: pip install {' '.join(missing)}")
         sys.exit(1)
 
@@ -72,21 +65,21 @@ CONFIG = {
     "detection_confidence": 0.25,
     "min_face_size": 25,
     
-    # === BOARD CALIBRATION (MANDATORY) ===
+    # === BOARD CALIBRATION ===
     "calibration_seconds": 5.0,
     
-    # === ANGLE ZONES (BOARD-RELATIVE) ===
-    # Yaw zones (relative to BOARD, not camera)
-    "focused_yaw_max": 45,           # WAS 25. Allow 45° (normal whiteboard scanning)
-    "looking_away_yaw_min": 45,      # WAS 25. Match above.
-    "looking_away_yaw_max": 65,      # WAS 55.    # Up to 55° = LOOKING_AWAY (yellow, transient)
+    # === ANGLE ZONES  ===
+    # Yaw zones 
+    "focused_yaw_max": 45,           
+    "looking_away_yaw_min": 45,      
+    "looking_away_yaw_max": 65,      
     # Beyond 55° = extreme (fast track to DISTRACTED)
     
     # Pitch zones
-    "upright_pitch_min": -15,        # pitch ≥ -15° = upright
-    "upright_pitch_max": 35,         # WAS 18. Allow relaxed listening posture.
-    "notes_pitch_min": 35,           # pitch > +18° = looking down
-    "notes_pitch_max": 50,           # pitch ≤ +50° = TAKING NOTES
+    "upright_pitch_min": -15,       
+    "upright_pitch_max": 35,         
+    "notes_pitch_min": 35,          
+    "notes_pitch_max": 50,         
     # Beyond +50° = drooping (potential sleep)
     
     # === STABILITY THRESHOLDS ===
@@ -97,7 +90,7 @@ CONFIG = {
     "notes_min_duration": 0.8,
     "looking_away_max_duration": 2.0,  # After this → DISTRACTED
     "extreme_yaw_fast_track": 1.5,     # Extreme yaw → faster DISTRACTED
-    "recovery_grace_period": 1.5,      # Recently focused blocks DISTRACTED
+    "recovery_grace_period": 1.5,      
     
     # === CROWD PRIOR ===
     "crowd_prior_threshold": 0.6,
@@ -137,11 +130,11 @@ FPS = 30
 # ============================================================================
 
 class AttentionState(Enum):
-    FOCUSED = "Focused"              # 🟢 Normal posture, facing board
-    TAKING_NOTES = "Taking Notes"    # 🟢 Looking down (productive)
-    LOOKING_AWAY = "Looking Away"    # 🟡 Sideways (transient only)
-    DISTRACTED = "Distracted"        # 🔴 Prolonged looking away (RARE)
-    NOT_VISIBLE = "Not Visible"      # ⚫ Face not detected
+    FOCUSED = "Focused"              #  Normal posture, facing board
+    TAKING_NOTES = "Taking Notes"    #  Looking down (productive)
+    LOOKING_AWAY = "Looking Away"    #  Sideways (transient only)
+    DISTRACTED = "Distracted"        #  Prolonged looking away (RARE)
+    NOT_VISIBLE = "Not Visible"      #  Face not detected
 
 STATE_INFO = {
     AttentionState.FOCUSED: {
@@ -152,7 +145,7 @@ STATE_INFO = {
     },
     AttentionState.TAKING_NOTES: {
         "weight": CONFIG["weight_taking_notes"],
-        "color": CONFIG["color_green"],  # GREEN - productive activity
+        "color": CONFIG["color_green"],  
         "category": "positive",
         "display": "Taking Notes"
     },
@@ -184,7 +177,7 @@ STATE_INFO = {
 class FaceData:
     bbox: Tuple[int, int, int, int] = (0, 0, 0, 0)
     raw_yaw: float = 0.0
-    board_yaw: float = 0.0  # Yaw relative to BOARD (not camera)
+    board_yaw: float = 0.0  
     pitch: float = 0.0
 
 @dataclass
@@ -251,17 +244,17 @@ class BoardCalibrator:
             self.calibration_start_time = timestamp
         
         if timestamp - self.calibration_start_time <= self.calibration_seconds:
-            # Only use stable samples
+           
             if variance <= CONFIG["stable_variance_max"]:
                 self.calibration_samples.append(yaw)
     
     def calibrate(self) -> float:
         if not self.calibration_samples:
-            print("   ⚠️ No stable samples, using offset = 0°")
+            print("    No stable samples, using offset = 0°")
             self.board_yaw_offset = 0.0
         else:
             self.board_yaw_offset = float(np.median(self.calibration_samples))
-            print(f"   ✅ Board direction: {self.board_yaw_offset:+.1f}° from camera")
+            print(f"    Board direction: {self.board_yaw_offset:+.1f}° from camera")
             print(f"      ({len(self.calibration_samples)} stable samples)")
         
         self.is_calibrated = True
@@ -557,10 +550,10 @@ class AttentionAnalyzer:
     Conservative analyzer with BOARD-RELATIVE yaw.
     
     States:
-    🟢 FOCUSED: Normal posture facing board (|board_yaw| ≤ 25°, upright pitch)
-    🟢 TAKING_NOTES: Looking down at desk (|board_yaw| ≤ 25°, pitch 18-50°)
-    🟡 LOOKING_AWAY: Sideways from board (|board_yaw| > 25°, transient <2s)
-    🔴 DISTRACTED: LOOKING_AWAY that persists >2s (rare)
+     FOCUSED: Normal posture facing board (|board_yaw| ≤ 25°, upright pitch)
+     TAKING_NOTES: Looking down at desk (|board_yaw| ≤ 25°, pitch 18-50°)
+     LOOKING_AWAY: Sideways from board (|board_yaw| > 25°, transient <2s)
+     DISTRACTED: LOOKING_AWAY that persists >2s (rare)
     """
     
     def __init__(self, calibrator: BoardCalibrator):
@@ -604,7 +597,7 @@ class AttentionAnalyzer:
             # Calculate stability
             self._calculate_stability(student)
             
-            # Detect nodding (positive boost)
+            # Detect nodding 
             student.is_nodding = self._detect_nodding(student)
             
             # Classify state
@@ -714,7 +707,7 @@ class AttentionAnalyzer:
         is_drooping = pitch > CONFIG["notes_pitch_max"]
 
         # ====================================================================
-        # 1. STRONG FOCUS OVERRIDE (CRITICAL FIX)
+        # 1. STRONG FOCUS OVERRIDE 
         # ====================================================================
         # If the student is looking DIRECTLY at the board (within tight bounds),
         # we IGNORE stability checks and duration timers.
@@ -790,13 +783,12 @@ class AttentionAnalyzer:
             
             abs_yaw = abs(student.face_data.board_yaw)
             pitch = student.face_data.pitch
-            
-            # STICKY RULE 1: Geometry is "Good Enough"
+           
             # If yaw is under 50° (wider than strict entry) and pitch is reasonable, stay Green.
             if abs_yaw < 50.0 and pitch < 40.0:
                  return current
             
-            # STICKY RULE 2: Short Duration Glitches
+    
             # If this "Looking Away" state just started (< 0.3s), ignore it.
             # This filters out detection noise or rapid head flicks.
             time_since_last_green = timestamp - max(student.last_focused_time, student.last_notes_time)
@@ -804,7 +796,7 @@ class AttentionAnalyzer:
                 return current
 
         # ====================================================================
-        # 2. QUICK RECOVERY (Always allow upgrade)
+        # 2. QUICK RECOVERY 
         # ====================================================================
         if new_state in [AttentionState.FOCUSED, AttentionState.TAKING_NOTES]:
             return new_state
@@ -834,7 +826,7 @@ class AttentionAnalyzer:
                     return AttentionState.LOOKING_AWAY
                 
                 # Stability check: If moving (talking/fidgeting), block Red state
-                # (Active distraction is different from passive zoning out)
+            
                 if not student.is_stable:
                     return AttentionState.LOOKING_AWAY
                 
@@ -1072,7 +1064,7 @@ def main():
     print("  CLASSROOM ATTENTION ANALYTICS")
     print("  Conservative Philosophy - BOARD-RELATIVE")
     print("=" * 70)
-    print("\n  🔒 STATES:")
+    print("\n   STATES:")
     print("     🟢 FOCUSED: Normal posture facing board")
     print("     🟢 TAKING NOTES: Looking down at desk (productive)")
     print("     🟡 LOOKING AWAY: Sideways from board (transient)")
@@ -1081,7 +1073,7 @@ def main():
     
     video = Path(CONFIG["video_path"])
     if not video.exists():
-        print(f"\n❌ Video not found: {video}")
+        print(f"\n Video not found: {video}")
         sys.exit(1)
     
     print(f"\n📹 {video}")
@@ -1110,7 +1102,7 @@ def main():
     if CONFIG["output_video"]:
         writer = cv2.VideoWriter(str(out_vid), cv2.VideoWriter_fourcc(*'mp4v'), FPS, (w, h))
     
-    print(f"\n⏳ Board calibration: first {CONFIG['calibration_seconds']}s")
+    print(f"\n Board calibration: first {CONFIG['calibration_seconds']}s")
     print("-" * 70)
     
     frame_num = 0
@@ -1197,7 +1189,7 @@ def main():
             writer.release()
         cv2.destroyAllWindows()
     
-    print("\n⏳ Generating report...")
+    print("\n Generating report...")
     report.students = analyzer.get_all_students()
     report.generate(out_xls, {"path": str(video), "duration": frame_num / FPS}, calibrator)
     
@@ -1214,9 +1206,9 @@ def main():
     print("\n" + "=" * 70)
     print("  COMPLETE")
     print("=" * 70)
-    print(f"\n  📐 Board: {calibrator.board_yaw_offset:+.1f}° from camera")
-    print(f"  📊 Class Focus: {class_focus:.1f}%")
-    print(f"  👥 Students: {len(all_students)}")
+    print(f"\n   Board: {calibrator.board_yaw_offset:+.1f}° from camera")
+    print(f"   Class Focus: {class_focus:.1f}%")
+    print(f"   Students: {len(all_students)}")
     
     if total_time > 0:
         print(f"\n  Distribution:")
@@ -1236,4 +1228,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
