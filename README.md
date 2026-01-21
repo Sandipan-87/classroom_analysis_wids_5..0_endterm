@@ -5,7 +5,7 @@ This repository represents the final evolution of that journey: a **"Conservativ
 
 ---
 
-##The Architecture
+## The Architecture
 
 ### 1. YOLOv8 & MediaPipe
 We use a hybrid pipeline to balance speed and accuracy:
@@ -30,20 +30,20 @@ One of the hardest geometric problems was the "Angle of Incidence." A student si
 Building this wasn't smooth. Here are the dragons we had to slay:
 
 ### 1. The "Dependency Hell"
-**The Struggle:** Getting `ultralytics` (YOLO), `mediapipe`, `opencv`, and `numpy` to coexist is a nightmare, especially in Google Colab. Runtime disconnects, version conflicts, and missing DLLs were constant battles.
-**The Fix:** A robust dependency checker was added to the script start-up to ensure the environment is healthy before launching, along with a modular class structure to isolate failures.
+Getting `ultralytics` (YOLO), `mediapipe`, `opencv`, and `numpy` to coexist is a nightmare, especially in Google Colab. Runtime disconnects, version conflicts, and missing DLLs were constant battles.
+**The Fix:** Actually I started coding this on colab but then I switched it on VS code on a venv of python version 3.10.9.
 
-### 2. The "Statue" Problem (Green Starvation)
-**The Struggle:** In early versions, we required "Stability" (low variance) to mark someone as focused. The result? **Diligent students typing notes were marked "Distracted"** because their heads were moving. We called this "Green Starvation"—the system refused to award credit for active work.
-**The Fix:** We implemented the **"Strong Focus Override."** If a student's nose points dead-center at the board, we ignore stability checks entirely. Geometry trumps variance.
+### 2. The "Statue" Problem 
+In early versions, we required "Stability" (low variance) to mark someone as focused. The result? **Diligent students typing notes were marked "Distracted"** because their heads were moving. We called this "Green Starvation"—the system refused to award credit for active work.
+**The Fix:** I implemented the **"Strong Focus Override."** If a student's nose points dead-center at the board, we ignore stability checks entirely. Geometry trumps variance.
 
 ### 3. The "Flicker" Effect
-**The Struggle:** Neural networks are noisy. A face might detect as `Yaw: 20°` in one frame and `28°` in the next. This caused students to flicker rapidly between "Focused" (Green) and "Looking Away" (Yellow).
+Neural networks are noisy. A face might detect as `Yaw: 20°` in one frame and `28°` in the next. This caused students to flicker rapidly between "Focused" (Green) and "Looking Away" (Yellow).
 **The Fix:** We introduced **Analog Timer Decay**. Instead of resetting focus timers to 0.0 instantly upon a mistake, they decay slowly. This gives the system "memory" and smooths out the noise.
 
 ---
 
-## 🧠 Philosophy & Bias Configuration
+## Bias Configuration
 
 **Current Tuning: High Focus Bias**
 To counter the "Statue Problem," this version is intentionally biased toward **Green (Focus)**. We assume students are paying attention unless they prove otherwise.
@@ -69,24 +69,25 @@ CONFIG = {
     # To make stricter: Increase to 0.5s
     "focused_min_duration": 0.1,
 }
+```
 
-## ⚠️ Limitations & Flaws
-Honesty is part of science. Here is where the system still struggles:
+## Limitations & Flaws
+Here is where the system still struggles:
 
 * **The "Sleeping Student" Loophole:** The system tracks **Head Pose**, not **Eye Gaze**. A student can face the board, close their eyes, and sleep. The system will mark them as "Focused."
 * **ID Swapping:** If two students walk past each other or sit very close (overlapping bounding boxes), the tracker might swap their IDs (e.g., `S05` becomes `S08`).
 * **2D-to-3D Estimation:** We estimate 3D angles from a flat 2D image. Extreme camera angles or hands covering the face can cause the "Pitch" calculation to jump wildly.
 * **No Audio Context:** A loud, disruptive class might be visually "Focused" (facing forward) but acoustically "Distracted." The system is deaf.
 
-## 🚀 Scope for Future Improvement
+## Scope for Future Improvement
 * **Gaze Tracking Integration:** Adding an eye-tracking submodule would solve the "Sleeping Student" loophole by verifying if eyes are open and looking at the board.
 * **Re-Identification (ReID):** Implementing a visual feature extractor (like ResNet) to memorize student clothing/appearance. This would allow `S01` to leave the room, come back, and still be `S01`.
 * **Seat Mapping:** Instead of random IDs, the system could automatically generate a "Seating Chart" (e.g., `Row 1, Seat A`) for better reporting.
 * **Real-Time Dashboard:** Replacing the Excel export with a live web dashboard (Streamlit/Flask) for real-time teacher feedback.
 
-## 📊 Outputs & Reports
+## Outputs & Reports
 The script produces three key artifacts:
 
 1.  **`attention_TIMESTAMP.mp4`**: A visual overlay showing the "Thought Process" of the AI (bounding boxes, state labels, debug stats).
 2.  **`attention_report_TIMESTAMP.xlsx`**: A raw data dump containing second-by-second timelines and aggregate student scores.
-3.  **Visual Plots:** (Generated via `visualize_report.py`) A visual dashboard of the class timeline, showing the rise and fall of attention over the lecture.
+3.  **Visual Plots:** (Generated via `plot.py`) A visual dashboard of the class timeline, showing the rise and fall of attention over the lecture.
