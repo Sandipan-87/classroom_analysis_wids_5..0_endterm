@@ -9,16 +9,16 @@ import sys
 # CONFIGURATION
 # ==========================================
 COLORS = {
-    "Focused": "#2ecc71",       # Bright Green
-    "Taking Notes": "#3498db",  # Bright Blue (Distinct from Green)
-    "Looking Away": "#f1c40f",  # Yellow
-    "Distracted": "#e74c3c"     # Red
+    "Focused": "#2ecc71",       
+    "Taking Notes": "#3498db", 
+    "Looking Away": "#f1c40f",  
+    "Distracted": "#e74c3c"     
 }
 
 def find_latest_report():
     files = glob.glob("attention_report_*.xlsx")
     if not files:
-        print("❌ No report files found!")
+        print(" No report files found!")
         print("   Run main.py first to generate an Excel report.")
         sys.exit(1)
     return max(files, key=os.path.getctime)
@@ -28,7 +28,7 @@ def plot_timeline(df_timeline):
     plt.figure(figsize=(14, 12))  # Slightly larger for better visibility
     
     # ==========================================
-    # PLOT 1: Student States (Multi-Line)
+    # PLOT 1: Student States 
     # ==========================================
     plt.subplot(2, 1, 1)
     
@@ -40,13 +40,13 @@ def plot_timeline(df_timeline):
                 y=df_timeline[state], 
                 label=state, 
                 color=COLORS[state], 
-                linewidth=3.5,  # Thicker lines for visibility
-                alpha=1.0       # Full opacity
+                linewidth=3.5, 
+                alpha=1.0       
             )
 
     plt.title("Classroom State Counts Over Time", fontsize=16, fontweight='bold')
     plt.ylabel("Number of Students", fontsize=14)
-    plt.xlabel("") # Remove x-label for top plot
+    plt.xlabel("") 
     plt.grid(True, linestyle='--', alpha=0.5)
     
     # Legend Settings
@@ -68,7 +68,7 @@ def plot_timeline(df_timeline):
         x="Time", 
         y="Class Focus %", 
         color="#2c3e50", 
-        linewidth=4  # Very thick for the main metric
+        linewidth=4 
     )
     
     # Add Reference Line
@@ -92,13 +92,13 @@ def plot_timeline(df_timeline):
 
     plt.tight_layout()
     plt.savefig("plot_timeline.png", dpi=300)
-    print("✅ Saved plot_timeline.png (High Visibility)")
+    print(" Saved plot_timeline.png (High Visibility)")
     plt.show()
 
 def plot_student_performance(df_students):
     """Generates bar charts for individual student performance."""
     if df_students.empty:
-        print("⚠️ No student data to plot.")
+        print(" No student data to plot.")
         return
 
     # Sort by Focus Index
@@ -129,7 +129,7 @@ def plot_student_performance(df_students):
     plt.grid(axis='x', alpha=0.3)
     plt.tight_layout()
     plt.savefig("plot_students.png", dpi=300)
-    print("✅ Saved plot_students.png")
+    print(" Saved plot_students.png")
     plt.show()
 
 def plot_overall_pie(df_timeline):
@@ -161,13 +161,13 @@ def plot_overall_pie(df_timeline):
 
 def main():
     file_path = find_latest_report()
-    print(f"📊 Analyzing: {file_path}")
+    print(f" Analyzing: {file_path}")
     
     try:
         df_timeline = pd.read_excel(file_path, sheet_name="Timeline")
         df_students = pd.read_excel(file_path, sheet_name="Students")
     except Exception as e:
-        print(f"❌ Error reading Excel file: {e}")
+        print(f" Error reading Excel file: {e}")
         return
 
     sns.set_theme(style="whitegrid")
@@ -182,4 +182,5 @@ def main():
     plot_overall_pie(df_timeline)
 
 if __name__ == "__main__":
+
     main()
